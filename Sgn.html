@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Capture</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid #000;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style></head><body>
+    <canvas id="signature-pad" width="600" height="300"></canvas>
+    <button id="save-button">Save</button>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script>
+        function rotateScreen() {
+            if (window.screen.orientation) {
+                window.screen.orientation.lock('landscape');
+            }
+        }
+        rotateScreen();
+        
+        var canvas = document.getElementById('signature-pad');
+        var signaturePad = new SignaturePad(canvas);
+        var saveButton = document.getElementById('save-button');
+
+        saveButton.addEventListener('click', function () {
+            if (signaturePad.isEmpty()) {
+                alert('Please provide a signature first.');
+                return;
+            }
+            var dataURL = signaturePad.toDataURL();
+            // Send dataURL to server
+            fetch('https://your-server-endpoint.com/save-signature', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: dataURL }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Signature saved successfully.');
+                    // Optionally, redirect back to AppSheet or close the window
+                    window.location.href = 'appsheet-url-to-redirect-back';
+                } else {
+                    alert('Failed to save signature.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving signature.');
+            });
+        });
+
+        // Handle resizing and orientation changes
+        window.addEventListener('resize', () => {
+            rotateScreen();
+        });
+    </script></body></html>
